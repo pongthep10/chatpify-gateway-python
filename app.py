@@ -136,52 +136,19 @@ def listen():
         return verify_webhook(request)
 
     if request.method == 'POST':
-        payload = json.loads(str(request.json))
-        # print(request.json)
+        payload = request.json
+        print(payload)
         event = payload['entry'][0]['messaging']
+        
+        for x in event:
+            if is_user_message(x) and pid:
+                text = x['message']['text']
+                sender_id = x['sender']['id']
+                page_id = x['recipient']['id']
+                respond(sender_id, page_id, text)
 
-        try:
-            for x in event:
-                if is_user_message(x):
-                    text = x['message']['text']
-                    sender_id = x['sender']['id']
-                    recipient_id = x['recipient']['id']
-                    respond(sender_id, recipient_id, text)
-            lineNotify(str(request.json),line_token) 
-            return "ok"
-        except Exception as e:
-            print(e.message, e.args)
-            app.logger.debug('Body parse form: %s', request.get_data(parse_form_data=True))
-            app.logger.debug(request.get_data(parse_form_data=True))
-            lineNotify(str(request.json),line_token)
-       
-# @app.route('/webhook', methods=['GET', 'POST'])
-# def home():
-#     if request.method == 'GET':
-    
-#         app.logger.info('Headers: %s', request.headers)
-#         app.logger.info('Body: %s', request.get_data())
-#         return verify_webhook(request)
-
-#     if request.method == 'POST':
-#         payload = request.json
-#         req = request.get_json(silent=False)
-#         print(req)
-#         # app.logger.debug('Headers: %s', request.headers)
-#         log = app.logger.debug('Body json: %s', request.json)
-#         # app.logger.debug('Body')
-#         # app.logger.debug('Body: %s', request.get_data())
-#         # app.logger.debug('Body parse form: %s', request.get_data(parse_form_data=True))
-#         # app.logger.debug('Body form: %s', request.form)
-#         # app.logger.debug('Body form dict: %s', request.form.to_dict(flat=False))
-#         # event = payload['entry'][0]['messaging']
-#         # pid = payload['entry'][0]['id']
-#         # for x in event:
-#             # if is_user_message(x):
-#                 # text = x['message']['text']
-#         lineNotify(str(request.json),line_token)
-#         return "ok"
+        return "ok"
         
 if __name__ == '__main__':
 
-    app.run(host= '0.0.0.0', debug=True, port=8281)
+    app.run(host= '0.0.0.0', debug=True, port=80)
