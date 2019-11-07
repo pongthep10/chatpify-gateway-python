@@ -59,7 +59,7 @@ PAGE_ACCESS_TOKEN = 'EAAgZCpzUtPzEBACMtZCJsjqBlfe2ne0u7G9ofnstbuIc719JiuRt2VYdhh
 
 # PAGE_ACCESS_TOKEN='EAAKDDnoBSygBAI7RbVqTDoMPAl2F0cXvxzEFuUFxZCIdel5RGmEANN4sisCOkp0DFaa5MSZAZBYCLs0y39x9BKZCqZCYPdnNUzWtiiWnGZCcLh7YQVbYsaMECEMbWcp2xvOMNIKB5KzIqmGhnLw5euU4VfmL1tOpXqoREELv4UBgZDZD' #Xtive
 
-def send_message(recipient_id, text, pid):
+def send_message(text, recipient_id, pid):
     """Send a response to Facebook"""
     payload = {
         'message': {
@@ -105,13 +105,16 @@ def verify_webhook(req):
     else:
         return "incorrect"
 
-def respond(sender, page_id, message):
+def respond(message, sender, page_id):
     """Formulate a response to the user and
     pass it on to a function that sends it."""
-    response = get_bot_response(message, sender, page_id)
-    print(response)
-    send_message(sender, response, page_id)
-
+    dialogflow_msg = get_bot_response(message, sender, page_id)
+    print(dialogflow_msg)
+    send_message(dialogflow_msg, sender, page_id)
+    
+# respond(message, sender, page_id)
+# send_message(text, recipient_id, pid)
+# get_bot_response(message, sender, receiver)
 
 def is_user_message(message):
     """Check if the message is a message from the user"""
@@ -127,28 +130,56 @@ def is_user_message(message):
 # 2019-10-24T05:57:48.917849+00:00 app[web.1]:   read: { watermark: 1571896661318 } }
 # =============================================================================
 
-@app.route("/webhook", methods=['GET', 'POST'])
+
+@app.route("/webhook",methods=['GET','POST'])
 def listen():
     """This is the main function flask uses to 
     listen at the `/webhook` endpoint"""
     if request.method == 'GET':
-        print(request.json)
         return verify_webhook(request)
 
     if request.method == 'POST':
         payload = request.json
-        print(payload)
         event = payload['entry'][0]['messaging']
-        
         for x in event:
-            if is_user_message(x) and pid:
+            if is_user_message(x):
                 text = x['message']['text']
                 sender_id = x['sender']['id']
-                page_id = x['recipient']['id']
-                respond(sender_id, page_id, text)
+                recipient_id = x['recipient']['id']
+                try:
+                    respond(message=text, sender=sender_id, page_id=recipient_id)
+                except Exception as e:
+                    print ("error in level argument",e)
 
         return "ok"
+       
+# @app.route('/webhook', methods=['GET', 'POST'])
+# def home():
+#     if request.method == 'GET':
+    
+#         app.logger.info('Headers: %s', request.headers)
+#         app.logger.info('Body: %s', request.get_data())
+#         return verify_webhook(request)
+
+#     if request.method == 'POST':
+#         payload = request.json
+#         req = request.get_json(silent=False)
+#         print(req)
+#         # app.logger.debug('Headers: %s', request.headers)
+#         log = app.logger.debug('Body json: %s', request.json)
+#         # app.logger.debug('Body')
+#         # app.logger.debug('Body: %s', request.get_data())
+#         # app.logger.debug('Body parse form: %s', request.get_data(parse_form_data=True))
+#         # app.logger.debug('Body form: %s', request.form)
+#         # app.logger.debug('Body form dict: %s', request.form.to_dict(flat=False))
+#         # event = payload['entry'][0]['messaging']
+#         # pid = payload['entry'][0]['id']
+#         # for x in event:
+#             # if is_user_message(x):
+#                 # text = x['message']['text']
+#         lineNotify(str(request.json),line_token)
+#         return "ok"
         
 if __name__ == '__main__':
 
-    app.run(host= '0.0.0.0', debug=True, port=80)
+    app.run(host= '0.0.0.0', debug=True, port=8123)
