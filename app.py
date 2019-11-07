@@ -139,15 +139,21 @@ def listen():
         payload = json.loads(str(request.json))
         # print(request.json)
         event = payload['entry'][0]['messaging']
-        for x in event:
-            if is_user_message(x):
-                text = x['message']['text']
-                sender_id = x['sender']['id']
-                recipient_id = x['recipient']['id']
-                respond(sender_id, recipient_id, text)
 
-        return "ok"
-        
+        try:
+            for x in event:
+                if is_user_message(x):
+                    text = x['message']['text']
+                    sender_id = x['sender']['id']
+                    recipient_id = x['recipient']['id']
+                    respond(sender_id, recipient_id, text)
+
+            return "ok"
+        except Exception as e:
+            print(e.message, e.args)
+            app.logger.debug('Body parse form: %s', request.get_data(parse_form_data=True))
+            app.logger.debug(request.get_data(parse_form_data=True))
+       
 # @app.route('/webhook', methods=['GET', 'POST'])
 # def home():
 #     if request.method == 'GET':
