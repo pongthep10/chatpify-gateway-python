@@ -105,12 +105,12 @@ def verify_webhook(req):
     else:
         return "incorrect"
 
-def respond(sender, receiver, message, pid):
+def respond(sender, page_id, message):
     """Formulate a response to the user and
     pass it on to a function that sends it."""
-    response = get_bot_response(message, sender, receiver)
+    response = get_bot_response(message, sender, page_id)
     print(response)
-    send_message(sender, response, receiver)
+    send_message(sender, response, page_id)
 
 
 def is_user_message(message):
@@ -182,6 +182,6 @@ def listen():
 #         lineNotify(str(request.json),line_token)
 #         return "ok"
         
-if __name__ == '__main__':
+# if __name__ == '__main__':
 
-    app.run(host= '0.0.0.0', debug=True, port=8281)
+#     app.run(host= '0.0.0.0', debug=True, port=8281)
